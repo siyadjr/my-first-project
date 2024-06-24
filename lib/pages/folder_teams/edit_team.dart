@@ -1,36 +1,36 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:manager_app/db/model/functins/easy_access/text_formfield.dart';
-import 'package:manager_app/db/model/functins/members_db.dart';
-import 'package:manager_app/db/model/member_details.dart';
+import 'package:manager_app/db/model/functins/team_db.dart';
+import 'package:manager_app/db/model/team_details_.dart';
+import 'package:manager_app/pages/select_members.dart';
 
-class EditMembers extends StatefulWidget {
-  final Members member;
+class EditTeam extends StatefulWidget {
+  final TeamDetails team;
   final int index;
 
-  const EditMembers({super.key, required this.member, required this.index});
+  const EditTeam({super.key, required this.team, required this.index});
 
   @override
-  State<EditMembers> createState() => _EditMembersState();
+  State<EditTeam> createState() => _EditTeamState();
 }
 
-class _EditMembersState extends State<EditMembers> {
+class _EditTeamState extends State<EditTeam> {
   late TextEditingController _nameController;
-  late TextEditingController _roleController;
-  late TextEditingController _phoneController;
-  late TextEditingController _strengthController;
+  late TextEditingController _aboutController;
+
   File? _selectedImage;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  List<int> selectedMemberIds = [];
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.member.name);
-    _roleController = TextEditingController(text: widget.member.role);
-    _phoneController = TextEditingController(text: widget.member.phone);
-    _strengthController = TextEditingController(text: widget.member.strength);
+    _nameController = TextEditingController(text: widget.team.teamName);
+    _aboutController = TextEditingController(text: widget.team.teamAbout);
+    selectedMemberIds = widget.team.memberIds!;
   }
 
   @override
@@ -38,7 +38,7 @@ class _EditMembersState extends State<EditMembers> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Edit Member'),
+          title: const Text('Edit Team'),
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -52,11 +52,11 @@ class _EditMembersState extends State<EditMembers> {
                       image: DecorationImage(
                         image: _selectedImage != null
                             ? FileImage(_selectedImage!)
-                            : widget.member.photo != null &&
-                                    widget.member.photo!.isNotEmpty
-                                ? FileImage(File(widget.member.photo!))
+                            : widget.team.teamPhoto != null &&
+                                    widget.team.teamPhoto!.isNotEmpty
+                                ? FileImage(File(widget.team.teamPhoto!))
                                 : const AssetImage(
-                                        'lib/assets/default_avatar_member.jpg')
+                                        'lib/assets/team_default_image.jpg')
                                     as ImageProvider,
                         fit: BoxFit.cover,
                       ),
@@ -86,7 +86,7 @@ class _EditMembersState extends State<EditMembers> {
                     children: [
                       TextFormFieldPage(
                         controllerType: _nameController,
-                        labelText: 'New Name',
+                        labelText: 'New team name',
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter the name';
@@ -96,36 +96,38 @@ class _EditMembersState extends State<EditMembers> {
                       ),
                       const SizedBox(height: 20),
                       TextFormFieldPage(
-                        controllerType: _roleController,
-                        labelText: 'New Role',
+                        controllerType: _aboutController,
+                        labelText: 'New about',
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter the role';
+                            return 'Please enter the about';
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 20),
-                      TextFormFieldPage(
-                        controllerType: _phoneController,
-                        labelText: 'New Phone',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter the phone';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      TextFormFieldPage(
-                        controllerType: _strengthController,
-                        labelText: 'New Strength',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter the strength';
-                          }
-                          return null;
-                        },
+                      Card(
+                        child: ListTile(
+                          title: const Text('Edit Your Members'),
+                          trailing:
+                              const Icon(Icons.keyboard_arrow_right_rounded),
+                          onTap: () async {
+                            final List<int>? result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) => SelectMembers(
+                                  team: widget.team,
+                                ),
+                              ),
+                            );
+                            if (result != null) {
+                              setState(() {
+                                selectedMemberIds = result;
+                              });
+                              
+                            }
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -134,7 +136,7 @@ class _EditMembersState extends State<EditMembers> {
               TextButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    saveUpdated(widget.member, widget.index);
+                    saveUpdated(widget.team, widget.index);
                   }
                 },
                 child: const Text('Save'),
@@ -146,22 +148,22 @@ class _EditMembersState extends State<EditMembers> {
     );
   }
 
-  Future<void> saveUpdated(Members member, int index) async {
+  Future<void> saveUpdated(TeamDetails team, int index) async {
     final updatedName = _nameController.text;
-    final updatedrole = _roleController.text;
-    final updatedPhone = _phoneController.text;
-    final updatedStrength = _strengthController.text;
+    final updatedAbout = _aboutController.text;
+
     final updatedImage =
-        _selectedImage == null ? member.photo : _selectedImage?.path;
-    final newMember = Members(
-        name: updatedName,
-        role: updatedrole,
-        phone: updatedPhone,
-        strength: updatedStrength,
-        photo: updatedImage,
-        id: widget.member.id);
-    updateMember(newMember, index);
-    Navigator.pop(context, newMember);
+        _selectedImage == null ? team.teamPhoto! : _selectedImage?.path;
+
+    final newTeam = TeamDetails(
+      teamName: updatedName,
+      teamAbout: updatedAbout,
+      teamPhoto: updatedImage,
+      memberIds: selectedMemberIds,
+    );
+
+    await updatedTeam(newTeam, index);
+    Navigator.pop(context, newTeam,);
   }
 
   Future<void> _showImagePicker(BuildContext context) async {
@@ -175,14 +177,14 @@ class _EditMembersState extends State<EditMembers> {
             children: [
               IconButton(
                 onPressed: () {
-                  _pickImageFromSource(1);
+                  _pickImageFromSource(ImageSource.gallery);
                   Navigator.pop(context);
                 },
                 icon: const Icon(Icons.photo_library),
               ),
               IconButton(
                 onPressed: () {
-                  _pickImageFromSource(0);
+                  _pickImageFromSource(ImageSource.camera);
                   Navigator.pop(context);
                 },
                 icon: const Icon(Icons.camera_alt),
@@ -194,13 +196,8 @@ class _EditMembersState extends State<EditMembers> {
     );
   }
 
-  Future<void> _pickImageFromSource(int value) async {
-    dynamic pickedImage;
-    if (value == 0) {
-      pickedImage = await ImagePicker().pickImage(source: ImageSource.camera);
-    } else {
-      pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
-    }
+  Future<void> _pickImageFromSource(ImageSource source) async {
+    final pickedImage = await ImagePicker().pickImage(source: source);
 
     if (pickedImage != null) {
       setState(() {

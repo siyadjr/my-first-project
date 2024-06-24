@@ -1,10 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:manager_app/db/model/functins/easy_access/text_formfield.dart';
 import 'package:manager_app/db/model/functins/team_db.dart';
-import 'package:manager_app/db/model/member_details.dart';
 import 'package:manager_app/db/model/team_details_.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:manager_app/pages/select_members.dart';
 
 class AddTeam extends StatefulWidget {
@@ -19,7 +18,7 @@ class _AddTeamState extends State<AddTeam> {
   final teamAboutController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   File? _selectedImage;
-  final List<Members> selectedMembers = [];
+  final List<int> selectedMemberIds = [];
 
   @override
   Widget build(BuildContext context) {
@@ -120,11 +119,11 @@ class _AddTeamState extends State<AddTeam> {
                       const SizedBox(height: 20),
                       Card(
                         child: ListTile(
-                          title: const Text('Select Your members'),
+                          title: const Text('Select Your Members'),
                           trailing:
                               const Icon(Icons.keyboard_arrow_right_rounded),
                           onTap: () async {
-                            final List<Members>? result = await Navigator.push(
+                            final List<int>? result = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (ctx) => const SelectMembers(),
@@ -132,8 +131,9 @@ class _AddTeamState extends State<AddTeam> {
                             );
                             if (result != null) {
                               setState(() {
-                                selectedMembers.clear();
-                                selectedMembers.addAll(result);
+                                selectedMemberIds.clear();
+                                selectedMemberIds.addAll(result);
+                                
                               });
                             }
                           },
@@ -170,13 +170,13 @@ class _AddTeamState extends State<AddTeam> {
             children: [
               IconButton(
                 onPressed: () {
-                  _pickImageFromSource(1);
+                  _pickImageFromSource(ImageSource.gallery);
                 },
                 icon: const Icon(Icons.photo_library),
               ),
               IconButton(
                 onPressed: () {
-                  _pickImageFromSource(0);
+                  _pickImageFromSource(ImageSource.camera);
                 },
                 icon: const Icon(Icons.camera_alt),
               ),
@@ -187,10 +187,8 @@ class _AddTeamState extends State<AddTeam> {
     );
   }
 
-  Future<void> _pickImageFromSource(value) async {
-    final pickedImage = await ImagePicker().pickImage(
-      source: value == 0 ? ImageSource.camera : ImageSource.gallery,
-    );
+  Future<void> _pickImageFromSource(ImageSource source) async {
+    final pickedImage = await ImagePicker().pickImage(source: source);
 
     if (pickedImage != null) {
       setState(() {
@@ -208,7 +206,7 @@ class _AddTeamState extends State<AddTeam> {
       teamName: teamNameController.text,
       teamAbout: teamAboutController.text,
       teamPhoto: _selectedImage?.path ?? '',
-      members: selectedMembers,
+      memberIds: selectedMemberIds,
     );
     await addTeamData(teamDetails);
     teams.value.add(teamDetails);

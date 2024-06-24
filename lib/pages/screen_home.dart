@@ -1,16 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:manager_app/db/model/drawer.dart';
 import 'package:manager_app/db/model/user_pass_name.dart';
-import 'package:manager_app/main.dart';
 import 'package:manager_app/pages/add_team.dart';
 import 'package:manager_app/pages/folder_members/add_members_icon.dart';
-import 'package:manager_app/pages/homescreen_widgets/delete_account.dart';
+import 'package:manager_app/pages/homescreen_widgets/drawer.dart';
 import 'package:manager_app/pages/homescreen_widgets/event_container.dart';
 import 'package:manager_app/pages/homescreen_widgets/team_list.dart';
-import 'package:manager_app/pages/screen_login.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:manager_app/pages/logout_button.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,12 +18,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<DrawerDetails> drawerdata = [
-    DrawerDetails(title: 'Privacy and Policy', trailing: ''),
-    DrawerDetails(title: 'Version', trailing: '1.0.2'),
-    DrawerDetails(title: 'Terms and Conditions', trailing: ''),
-    DrawerDetails(title: 'Feedback', trailing: ''),
-  ];
+  //
 
   @override
   Widget build(BuildContext context) {
@@ -54,39 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        drawer: Drawer(
-          backgroundColor: Colors.white,
-          child: Column(
-            children: [
-              const DrawerHeader(
-                child: Center(
-                  child: Text(
-                    'About',
-                    style: TextStyle(fontWeight: FontWeight.w300, fontSize: 35),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: drawerdata.length + 1,
-                  padding: const EdgeInsets.all(8),
-                  itemBuilder: (BuildContext context, int index) {
-                    if (index < drawerdata.length) {
-                      return ListTile(
-                        title: Text(drawerdata[index].title),
-                        trailing: Text(drawerdata[index].trailing),
-                      );
-                    } else {
-                      return const ListTile(
-                        title: DeleteAccount(),
-                      );
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+        drawer: const DrawerPage(),
         body: CustomScrollView(
           slivers: [
             SliverAppBar(
@@ -129,19 +89,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Row(
-                            children: [
-                              const AddMemberIcon(),
-                              IconButton(
-                                onPressed: () {
-                                  _showExitConfirmationDialog(context);
-                                },
-                                icon: const Icon(
-                                  Icons.exit_to_app,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
+                          const Row(
+                            children: [AddMemberIcon(), LogoutButton()],
                           )
                         ],
                       ),
@@ -185,46 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
-        // bottomNavigationBar: MyBottomNavigationBar(),
       ),
-    );
-  }
-
-  void _showExitConfirmationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Confirmation'),
-          content: const Text('Are you sure you want to log out?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _exitToApp(context);
-              },
-              child: const Text(
-                'Confirm',
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel', style: TextStyle(color: Colors.blue)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _exitToApp(BuildContext context) async {
-    final sharedPref = await SharedPreferences.getInstance();
-    sharedPref.setBool(userlogged, false);
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (ctx) => const ScreenLogin()),
     );
   }
 }

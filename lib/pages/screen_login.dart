@@ -92,26 +92,9 @@ class _ScreenLoginState extends State<ScreenLogin> {
                         } else {
                           return Form(
                             key: _formKey,
-                            // autovalidateMode: AutovalidateMode.always,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                // TextFormField(
-                                //   controller: nameController,
-                                //   decoration: const InputDecoration(
-                                //     border: OutlineInputBorder(),
-                                //     label: Text('Username'),
-                                //   ),
-                                //   validator: (value) {
-                                // if (value == null || value.isEmpty) {
-                                //   return 'Please enter a username';
-                                // }
-                                //     return null;
-                                //   },
-                                //   onChanged: (value) {
-                                //     _validateForm();
-                                //   },
-                                // ),
                                 TextFormFieldPage(
                                     controllerType: nameController,
                                     validator: (value) {
@@ -122,35 +105,21 @@ class _ScreenLoginState extends State<ScreenLogin> {
                                     },
                                     labelText: 'name'),
                                 const SizedBox(height: 20),
-                                TextFormField(
-                                  keyboardType: TextInputType.number,
-                                  controller: passwordController,
-                                  obscureText: _obscureText,
-                                  decoration: InputDecoration(
-                                    border: const OutlineInputBorder(),
-                                    label: const Text('Password'),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _obscureText
-                                            ? Icons.visibility
-                                            : Icons.visibility_off,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _obscureText = !_obscureText;
-                                        });
-                                      },
-                                    ),
-                                  ),
+                                TextFormFieldPage(
+                                  controllerType: passwordController,
+                                  labelText: 'Password',
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Please enter a password';
                                     }
                                     return null;
                                   },
-                                  onChanged: (value) {
-                                    _validateForm();
+                                  buttonAction: (value) {
+                                    setState(() {
+                                      _validateForm();
+                                    });
                                   },
+                                  obscureText: _obscureText,
                                 ),
                                 const SizedBox(height: 10),
                                 if (check)
@@ -204,18 +173,18 @@ class _ScreenLoginState extends State<ScreenLogin> {
   Future<void> checkLogin() async {
     final enteredName = nameController.text;
     final enteredPass = passwordController.text;
-
     final userBox = await Hive.openBox<UserDetails>('user_db');
     UserDetails? storedUserData;
     try {
       storedUserData = userBox.values.firstWhere(
-        (user) => user.name == enteredName && user.password == enteredPass,
+        (user) =>
+            user                                                                                                                                                                                                                                                                                                                                                                                                                                                        .name.toUpperCase() == enteredName.toUpperCase() &&
+            user.password.toUpperCase() == enteredPass.toUpperCase(),
       );
     } catch (e) {
       storedUserData = null;
     }
     await userBox.close();
-
     if (storedUserData != null) {
       print('Credentials are correct. Navigating to HomeScreen...');
 

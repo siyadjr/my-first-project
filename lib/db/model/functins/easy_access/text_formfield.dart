@@ -1,27 +1,57 @@
 import 'package:flutter/material.dart';
 
-class TextFormFieldPage extends StatelessWidget {
+class TextFormFieldPage extends StatefulWidget {
   final TextEditingController controllerType;
   final String? Function(String?)? validator;
   final String labelText;
   final void Function(String)? buttonAction;
-  const TextFormFieldPage(
-      {super.key,
-      required this.controllerType,
-      required this.labelText,
-      this.validator,
-      this.buttonAction});
+  final bool? obscureText;
+
+  const TextFormFieldPage({
+    super.key,
+    required this.controllerType,
+    required this.labelText,
+    this.validator,
+    this.buttonAction,
+    this.obscureText,
+  });
+
+  @override
+  _TextFormFieldPageState createState() => _TextFormFieldPageState();
+}
+
+class _TextFormFieldPageState extends State<TextFormFieldPage> {
+  late bool _obscureText;
+
+  @override
+  void initState() {
+    super.initState();
+    _obscureText = widget.obscureText ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      controller: controllerType,
+      controller: widget.controllerType,
+      obscureText: _obscureText,
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
-        label: Text(labelText),
+        label: Text(widget.labelText),
+        suffixIcon: widget.obscureText == true
+            ? IconButton(
+                icon: Icon(
+                  _obscureText ? Icons.visibility : Icons.visibility_off,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureText = !_obscureText;
+                  });
+                },
+              )
+            : null,
       ),
-      validator: validator,
-      onChanged: buttonAction,
+      validator: widget.validator,
+      onChanged: widget.buttonAction,
     );
   }
 }

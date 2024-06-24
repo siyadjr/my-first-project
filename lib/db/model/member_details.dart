@@ -13,11 +13,13 @@ class Members {
   String strength;
   @HiveField(4)
   String? photo;
-
+  @HiveField(5)
+  int id;
   Members(
       {required this.name,
       required this.role,
       required this.phone,
       required this.strength,
-      required this.photo});
+      required this.photo,
+      required this.id});
 }

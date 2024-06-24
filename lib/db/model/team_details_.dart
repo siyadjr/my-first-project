@@ -1,5 +1,4 @@
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:manager_app/db/model/member_details.dart';
 
 part 'team_details_.g.dart';
 
@@ -12,12 +11,13 @@ class TeamDetails {
   @HiveField(2)
   String? teamPhoto; // Make fields nullable
   @HiveField(3)
-  List<Members>? members = [];
+  List<int>? memberIds = []; // Store member IDs
+  
 
   TeamDetails({
     required this.teamName,
     required this.teamAbout,
     required this.teamPhoto,
-    required this.members
+    required this.memberIds,
   });
 }

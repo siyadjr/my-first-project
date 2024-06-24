@@ -20,7 +20,7 @@ class TeamDetailsAdapter extends TypeAdapter<TeamDetails> {
       teamName: fields[0] as String?,
       teamAbout: fields[1] as String?,
       teamPhoto: fields[2] as String?,
-      members: (fields[3] as List?)?.cast<Members>(),
+      memberIds: (fields[3] as List?)?.cast<int>(),
     );
   }
 
@@ -35,7 +35,7 @@ class TeamDetailsAdapter extends TypeAdapter<TeamDetails> {
       ..writeByte(2)
       ..write(obj.teamPhoto)
       ..writeByte(3)
-      ..write(obj.members);
+      ..write(obj.memberIds);
   }
 
   @override

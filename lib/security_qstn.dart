@@ -9,6 +9,7 @@ class SecurityPage extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final questionController = TextEditingController();
   final answerController = TextEditingController();
+  bool value = false;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class SecurityPage extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context, value);
           },
           icon: const Icon(
             Icons.arrow_back,
@@ -103,8 +104,9 @@ class SecurityPage extends StatelessWidget {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     checkSecurity();
+                    value = true;
                     Navigator.pop(
-                      context,
+                      context,value
                     );
                   }
                 },

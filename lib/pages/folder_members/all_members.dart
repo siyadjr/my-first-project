@@ -21,8 +21,7 @@ class _AllMembersState extends State<AllMembers> {
           automaticallyImplyLeading: false,
           leading: IconButton(
               onPressed: () {
-                Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (ctx) => const HomeScreen()));
+                Navigator.pop(context);
               },
               icon: const Icon(
                 Icons.arrow_back,

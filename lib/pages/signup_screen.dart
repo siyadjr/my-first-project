@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:manager_app/db/model/functins/easy_access/text_formfield.dart';
 import 'package:manager_app/db/model/user_pass_name.dart';
 import 'package:manager_app/pages/screen_home.dart';
 import 'package:manager_app/security_qstn.dart';
@@ -20,8 +21,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  bool _obscureText = true;
-  bool _obscureText2 = true;
   bool _isSecurityQuestionSet = false;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
@@ -64,81 +63,57 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   const SizedBox(height: 20),
                   Form(
                     key: _formKey,
-                    autovalidateMode:
-                        AutovalidateMode.onUserInteraction, // Add this line
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     child: Column(
                       children: [
-                        TextFormField(
-                          controller: nameController,
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'Username'),
+                        TextFormFieldPage(
+                          controllerType: nameController,
+                          labelText: 'Username',
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a username';
                             }
                             return null;
                           },
-                          onChanged: (value) {
+                          buttonAction: (value) {
                             setState(() {
                               _validateForm();
                             });
                           },
                         ),
                         const SizedBox(height: 20),
-                        TextFormField(
-                          keyboardType: TextInputType.text,
-                          controller: passwordController,
-                          obscureText: _obscureText,
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            labelText: 'Password',
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscureText
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscureText = !_obscureText;
-                                });
-                              },
-                            ),
-                          ),
+                        TextFormFieldPage(
+                          controllerType: passwordController,
+                          labelText: 'Password',
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a password';
                             }
                             return null;
                           },
-                          onChanged: (value) {
+                          buttonAction: (value) {
                             setState(() {
                               _validateForm();
                             });
                           },
+                          obscureText: true,
                         ),
                         const SizedBox(height: 20),
-                        TextFormField(
-                          keyboardType: TextInputType.text,
-                          controller: confirmpassController,
-                          obscureText: _obscureText2,
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            labelText: 'Confirm Password',
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscureText2
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscureText2 = !_obscureText2;
-                                });
-                              },
-                            ),
-                          ),
+                        TextFormFieldPage(
+                          controllerType: confirmpassController,
+                          labelText: 'Confirm Password',
+                          validator: (value) {
+                            if (value != passwordController.text) {
+                              return 'Passwords do not match';
+                            }
+                            return null;
+                          },
+                          buttonAction: (value) {
+                            setState(() {
+                              _validateForm();
+                            });
+                          },
+                          obscureText: true,
                         ),
                         const SizedBox(height: 20),
                         if (!_isSecurityQuestionSet)
@@ -147,16 +122,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             children: [
                               TextButton(
                                 onPressed: () async {
-                                  setState(() {
-                                    _isSecurityQuestionSet = true;
-                                  });
-
-                                  await Navigator.push(
+                                  final value = await Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (ctx) => SecurityPage(),
                                     ),
                                   );
+                                  if (value != null && value == true) {
+                                    setState(() {
+                                      _isSecurityQuestionSet = true;
+                                    });
+                                  }
                                 },
                                 child: const Text(
                                   'Set Security Question',
@@ -212,13 +188,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final enteredName = nameController.text;
     final enteredPass = passwordController.text;
     final confirmPass = confirmpassController.text;
-
     if (confirmPass == enteredPass) {
       final userBox = await Hive.openBox<UserDetails>('user_db');
       final userData = UserDetails(name: enteredName, password: enteredPass);
       await userBox.add(userData);
       await userBox.close();
-
       final signupPref = await SharedPreferences.getInstance();
       await signupPref.setBool('signUp', true);
       final prefs = await SharedPreferences.getInstance();

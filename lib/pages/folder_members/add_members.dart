@@ -233,15 +233,16 @@ class _AddMembersState extends State<AddMembers> {
   }
 
   void _saveMemberDetails() async {
+    final int memberId = DateTime.now().millisecondsSinceEpoch;
     final memberDetails = Members(
-      name: nameController.text,
-      role: roleController.text,
-      phone: phoneController.text,
-      strength: strengthController.text,
-      photo: _selectedImage?.path,
-    );
+        name: nameController.text,
+        role: roleController.text,
+        phone: phoneController.text,
+        strength: strengthController.text,
+        photo: _selectedImage?.path,
+        id: memberId);
     await addMembers(memberDetails);
-    // ignore: use_build_context_synchronously
+   
     Navigator.pop(context);
   }
 }

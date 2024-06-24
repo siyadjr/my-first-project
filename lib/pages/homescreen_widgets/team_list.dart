@@ -67,7 +67,8 @@ class _TeamListState extends State<TeamList> {
                                     Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (ctx) => DetailsTeam(team: team,)));
+                                            builder: (ctx) => DetailsTeam(
+                                                team: team, index: index)));
                                   },
                                   leading: team.teamPhoto!.isEmpty
                                       ? const CircleAvatar(
@@ -98,8 +99,7 @@ class _TeamListState extends State<TeamList> {
                                   ),
                                   subtitle: Row(
                                     children: [
-                                      Text(
-                                          team.members?.length.toString() ?? '',
+                                      Text(team.memberIds!.length.toString(),
                                           style: const TextStyle(
                                               color: Colors.white)),
                                       const SizedBox(width: 10),

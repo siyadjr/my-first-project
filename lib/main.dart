@@ -17,11 +17,12 @@ Future<void> main() async {
   Hive.registerAdapter(TeamDetailsAdapter());
   Hive.registerAdapter(SequrityPassAdapter());
   Hive.registerAdapter(MembersAdapter());
+  
   await Hive.openBox<Members>('members_db');
   await Hive.openBox<SequrityPass>('security_db');
   await Hive.openBox<UserDetails>('user_db');
-  await Hive.openBox<TeamDetails>('teamdetails_db');
-
+  await Hive.openBox<TeamDetails>('teamdetails_db'); 
+  
   runApp(const MyApp());
 }
 

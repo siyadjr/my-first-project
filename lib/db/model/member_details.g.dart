@@ -22,13 +22,14 @@ class MembersAdapter extends TypeAdapter<Members> {
       phone: fields[2] as String,
       strength: fields[3] as String,
       photo: fields[4] as String?,
+      id: fields[5] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, Members obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class MembersAdapter extends TypeAdapter<Members> {
       ..writeByte(3)
       ..write(obj.strength)
       ..writeByte(4)
-      ..write(obj.photo);
+      ..write(obj.photo)
+      ..writeByte(5)
+      ..write(obj.id);
   }
 
   @override

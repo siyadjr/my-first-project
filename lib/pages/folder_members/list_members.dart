@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:manager_app/db/model/functins/members_db.dart';
+import 'package:manager_app/db/model/functins/team_db.dart';
 import 'package:manager_app/db/model/member_details.dart';
 import 'package:manager_app/pages/folder_members/member_details.dart';
 import 'package:manager_app/pages/folder_members/search_members.dart';
@@ -40,60 +41,67 @@ class _ListMembersState extends State<ListMembers> {
         ),
         Flexible(
           child: ValueListenableBuilder<List<Members>>(
-            valueListenable: memberPass,
-            builder: (context, members, child) {
-              if (members.isEmpty) {
-                return const Center(
-                  child: Text('No members available'),
-                );
-              } else {
-                return ListView.separated(
-                  itemBuilder: (context, index) {
-                    final member = members[index];
-                    return ListTile(
-                      onTap: () {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (ctx) => DetailsMember(
-                                member: members[index], index: index)));
-                      },
-                      leading: member.photo != null && member.photo!.isNotEmpty
-                          ? CircleAvatar(
-                              radius: 25,
-                              backgroundColor:
-                                  const Color.fromARGB(255, 67, 123, 132),
-                              backgroundImage: FileImage(File(member.photo!)),
-                            )
-                          : const CircleAvatar(
-                              radius: 25,
-                              backgroundImage: AssetImage(
-                                  'lib/assets/default_avatar_member.jpg'),
+              valueListenable: memberPass,
+              builder: (context, members, child) {
+                return members.isEmpty
+                    ? const Center(
+                        child: Text("No members"),
+                      )
+                    : ListView.separated(
+                        itemBuilder: (context, index) {
+                          final member = members[index];
+                          return ListTile(
+                            onTap: () async {
+                              final value = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (ctx) => DetailsMember(
+                                          member: member, index: index)));
+                              if (value != null) {
+                                setState(() {
+                                  _fetchAllMembers();
+                                });
+                              }
+                            },
+                            leading: member.photo != null &&
+                                    member.photo!.isNotEmpty
+                                ? CircleAvatar(
+                                    radius: 25,
+                                    backgroundColor:
+                                        const Color.fromARGB(255, 67, 123, 132),
+                                    backgroundImage:
+                                        FileImage(File(member.photo!)),
+                                  )
+                                : const CircleAvatar(
+                                    radius: 25,
+                                    backgroundImage: AssetImage(
+                                        'lib/assets/default_avatar_member.jpg'),
+                                  ),
+                            title: Text(
+                              member.name.toUpperCase(),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
                             ),
-                      title: Text(
-                        member.name.toUpperCase(),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(member.role.toUpperCase()),
-                      trailing: IconButton(
-                        icon: const Icon(
-                          Icons.delete,
-                          size: 15,
-                        ),
-                        onPressed: () => confirmDelete(index),
-                      ),
-                    );
-                  },
-                  separatorBuilder: (context, index) => const Divider(),
-                  itemCount: members.length,
-                );
-              }
-            },
-          ),
+                            subtitle: Text(member.role.toUpperCase()),
+                            trailing: IconButton(
+                              icon: const Icon(
+                                Icons.delete,
+                                size: 15,
+                              ),
+                              onPressed: () => confirmDelete(index, member),
+                            ),
+                          );
+                        },
+                        separatorBuilder: (context, index) => const Divider(),
+                        itemCount: members.length,
+                      );
+              }),
         ),
       ],
     );
   }
 
-  Future<void> confirmDelete(int index) async {
+  Future<void> confirmDelete(int index, Members member) async {
     showDialog(
         context: context,
         builder: (context) {
@@ -104,6 +112,7 @@ class _ListMembersState extends State<ListMembers> {
               TextButton(
                 onPressed: () {
                   deleteMembers(index);
+                  deleteTeamMemberId(member.id);
                   Navigator.pop(context);
                 },
                 child: const Text(

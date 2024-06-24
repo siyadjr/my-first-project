@@ -4,6 +4,7 @@ import 'package:manager_app/db/model/member_details.dart';
 import 'package:manager_app/db/model/sequrity_pass.dart';
 import 'package:manager_app/db/model/team_details_.dart';
 import 'package:manager_app/db/model/user_pass_name.dart';
+import 'package:manager_app/main.dart';
 import 'package:manager_app/pages/signup_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -80,6 +81,8 @@ class _DeleteAccountState extends State<DeleteAccount> {
     await memberBox.clear();
     final sharedPref = await SharedPreferences.getInstance();
     sharedPref.setBool('user_logged', false);
+    final signupPref = await SharedPreferences.getInstance();
+    await signupPref.setBool('signUp', false);
   }
 
   void _navigateToLogin() {
