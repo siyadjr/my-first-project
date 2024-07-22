@@ -21,13 +21,15 @@ class TeamDetailsAdapter extends TypeAdapter<TeamDetails> {
       teamAbout: fields[1] as String?,
       teamPhoto: fields[2] as String?,
       memberIds: (fields[3] as List?)?.cast<int>(),
+      taskIds: (fields[4] as List?)?.cast<int>(),
+      id: fields[5] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, TeamDetails obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.teamName)
       ..writeByte(1)
@@ -35,7 +37,11 @@ class TeamDetailsAdapter extends TypeAdapter<TeamDetails> {
       ..writeByte(2)
       ..write(obj.teamPhoto)
       ..writeByte(3)
-      ..write(obj.memberIds);
+      ..write(obj.memberIds)
+      ..writeByte(4)
+      ..write(obj.taskIds)
+      ..writeByte(5)
+      ..write(obj.id);
   }
 
   @override

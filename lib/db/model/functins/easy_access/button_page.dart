@@ -5,15 +5,15 @@ class ButtonPage extends StatelessWidget {
   final String buttonName;
 
   const ButtonPage({
-    Key? key,
+    super.key,
     required this.targetPage,
     required this.buttonName,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 85, 
+      width: 85,
       height: 30,
       child: ElevatedButton(
         onPressed: () {
@@ -23,7 +23,7 @@ class ButtonPage extends StatelessWidget {
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromARGB(255, 171, 20, 20),
+          backgroundColor: const Color.fromARGB(255, 0, 109, 116),
           padding: EdgeInsets.zero, // Remove padding to fit text
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),

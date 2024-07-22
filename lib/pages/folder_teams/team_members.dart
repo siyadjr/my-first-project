@@ -9,14 +9,15 @@ class TeamMembers extends StatefulWidget {
   final TeamDetails team;
   final VoidCallback onRefresh;
 
-  const TeamMembers({super.key, required this.team, required this.onRefresh});
+  const TeamMembers({Key? key, required this.team, required this.onRefresh})
+      : super(key: key);
 
   @override
   State<TeamMembers> createState() => _TeamMembersState();
 }
 
 class _TeamMembersState extends State<TeamMembers> {
-  List<Members> members = [];
+  ValueNotifier<List<Members>> membersNotifier = ValueNotifier([]);
 
   @override
   void initState() {
@@ -25,10 +26,8 @@ class _TeamMembersState extends State<TeamMembers> {
   }
 
   Future<void> fetchMembers() async {
-    List<Members> fetchedMembers = await getTeamMember(widget.team);
-    setState(() {
-      members = fetchedMembers;
-    });
+    List<Members> fetchedMembers = await getTeamMember(widget.team.id);
+    membersNotifier.value = fetchedMembers;
   }
 
   @override
@@ -41,49 +40,70 @@ class _TeamMembersState extends State<TeamMembers> {
 
   @override
   Widget build(BuildContext context) {
-    int length = members.length > 3 ? 3 : members.length;
+    return ValueListenableBuilder<List<Members>>(
+      valueListenable: membersNotifier,
+      builder: (context, members, child) {
+        int length = members.length > 3 ? 3 : members.length;
 
-    return Container(
-      height: 200,
-      padding: const EdgeInsets.all(8.0),
-      child: members.isEmpty
-          ? const Center(
-              child: Text('No members'),
-            )
-          : ListView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: length,
-              itemBuilder: (context, index) {
-                final member = members[index];
-                return ListTile(
+        return Container(
+          height: members.length > 2 ? 200 : 120,
+          padding: const EdgeInsets.all(8.0),
+          child: members.isEmpty
+              ? GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (ctx) =>
-                            TeamMemberDetails(member: member, index: index),
+                    // Handle adding members
+                  },
+                  child: const Tooltip(
+                    message: 'Add Your member in EditTeam',
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.help_outline, color: Colors.grey),
+                        SizedBox(width: 5),
+                        Text(
+                          'No members',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: length,
+                  itemBuilder: (context, index) {
+                    final member = members[index];
+                    return ListTile(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (ctx) =>
+                                TeamMemberDetails(member: member, index: index),
+                          ),
+                        );
+                      },
+                      title: Text(
+                        member.name.toUpperCase(),
+                        style: const TextStyle(color: Colors.black),
                       ),
+                      leading: member.photo != null && member.photo!.isNotEmpty
+                          ? CircleAvatar(
+                              radius: 20,
+                              backgroundColor:
+                                  const Color.fromARGB(255, 67, 123, 132),
+                              backgroundImage: FileImage(File(member.photo!)),
+                            )
+                          : const CircleAvatar(
+                              radius: 20,
+                              backgroundImage: AssetImage(
+                                  'lib/assets/default_avatar_member.jpg'),
+                            ),
                     );
                   },
-                  title: Text(
-                    member.name.toUpperCase(),
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  leading: member.photo != null && member.photo!.isNotEmpty
-                      ? CircleAvatar(
-                          radius: 20,
-                          backgroundColor:
-                              const Color.fromARGB(255, 67, 123, 132),
-                          backgroundImage: FileImage(File(member.photo!)),
-                        )
-                      : const CircleAvatar(
-                          radius: 20,
-                          backgroundImage: AssetImage(
-                              'lib/assets/default_avatar_member.jpg'),
-                        ),
-                );
-              },
-            ),
+                ),
+        );
+      },
     );
   }
 }

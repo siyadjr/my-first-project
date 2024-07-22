@@ -10,7 +10,7 @@ ValueNotifier<List<Members>> memberPass = ValueNotifier([]);
 Future<void> addMembers(Members value) async {
   final membersBox = await Hive.openBox<Members>('members_db');
   await membersBox.add(value);
-  print(value.id);
+
   memberPass.value = membersBox.values.toList();
   memberPass.notifyListeners();
 }
@@ -34,15 +34,25 @@ Future<void> deleteMembers(int index) async {
   memberPass.notifyListeners();
 }
 
-Future<void> updateMember(Members updatedMember, index) async {
+Future<void> updateMember(Members updatedMember) async {
   final memberBox = await Hive.openBox<Members>('members_db');
-  await memberBox.putAt(index, updatedMember);
+
+  for (int i = 0; i < memberBox.length; i++) {
+    final existingMember = memberBox.getAt(i);
+    if (existingMember != null && existingMember.id == updatedMember.id) {
+      await memberBox.putAt(i, updatedMember);
+      break;
+    }
+  }
   memberPass.value.toList();
   memberPass.notifyListeners();
 }
 
-Future<List<Members>> getTeamMember(TeamDetails team) async {
-  final memberIds = team.memberIds;
+Future<List<Members>> getTeamMember(int id) async {
+  final teamBox = Hive.box<TeamDetails>('teamdetails_db');
+  final index = teamBox.values.toList().indexWhere((team) => team.id == id);
+  final team = teamBox.getAt(index);
+  final memberIds = team!.memberIds;
   final memberBox = Hive.box<Members>('members_db');
   List<Members> members = [];
 

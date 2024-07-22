@@ -4,7 +4,7 @@ typedef OnSearchCallback = void Function(String);
 
 class SearchMembers extends StatelessWidget {
   final OnSearchCallback onSearch;
-  const SearchMembers({Key? key, required this.onSearch}) : super(key: key);
+  const SearchMembers({super.key, required this.onSearch});
 
   @override
   Widget build(BuildContext context) {

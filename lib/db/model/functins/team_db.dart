@@ -1,4 +1,4 @@
-// ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -9,7 +9,6 @@ ValueNotifier<List<TeamDetails>> teams = ValueNotifier([]);
 Future<void> addTeamData(TeamDetails value) async {
   final teamBox = Hive.box<TeamDetails>('teamdetails_db');
   await teamBox.add(value);
-
   teams.notifyListeners();
 }
 
@@ -35,7 +34,13 @@ Future<void> deleteTeam(int index) async {
 
 Future<void> updatedTeam(TeamDetails updatedTeam, int index) async {
   final teamBox = await Hive.openBox<TeamDetails>('teamdetails_db');
-  await teamBox.putAt(index, updatedTeam);
+  for (int i = 0; i < teamBox.length; i++) {
+    final existingTeam = teamBox.getAt(i);
+    if (existingTeam != null && existingTeam.id == updatedTeam.id) {
+      await teamBox.putAt(i, updatedTeam);
+      break;
+    }
+  }
 
   teams.value = teamBox.values.toList();
   teams.notifyListeners();
@@ -49,8 +54,40 @@ Future<void> deleteTeamMemberId(int memberId) async {
         team.memberIds != null &&
         team.memberIds!.contains(memberId)) {
       team.memberIds!.remove(memberId);
-      await teamBox.putAt(
-          i, team); 
+      await teamBox.putAt(i, team);
+    }
+  }
+
+  teams.value = teamBox.values.toList();
+  teams.notifyListeners();
+}
+
+Future<void> addTaskToTeam(int teamId, int taskId) async {
+  final teamBox = Hive.box<TeamDetails>('teamdetails_db');
+
+  final index = teamBox.values.toList().indexWhere((team) => team.id == teamId);
+
+  if (index != -1) {
+    final team = teamBox.getAt(index);
+
+    team!.taskIds ??= [];
+    team.taskIds!.add(taskId);
+
+    await teamBox.putAt(index, team);
+  }
+}
+
+Future<void> deleteTeamTaskId(TeamDetails team, int taskId) async {
+  final teamBox = Hive.box<TeamDetails>('teamdetails_db');
+
+  final index = teamBox.values.toList().indexWhere((t) => t.id == team.id);
+
+  if (index != -1) {
+    final updatedTeam = teamBox.getAt(index);
+
+    if (updatedTeam != null && updatedTeam.taskIds != null) {
+      updatedTeam.taskIds!.remove(taskId);
+      await teamBox.putAt(index, updatedTeam);
     }
   }
 

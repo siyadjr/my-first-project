@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+
+import 'package:manager_app/db/model/functins/easy_access/text_formfield.dart';
 import 'package:manager_app/db/model/functins/members_db.dart';
 import 'package:manager_app/db/model/member_details.dart';
+import 'package:manager_app/pages/folder_members/add_member_container.dart';
 
 class AddMembers extends StatefulWidget {
   const AddMembers({super.key});
@@ -40,44 +42,9 @@ class _AddMembersState extends State<AddMembers> {
         body: SingleChildScrollView(
           child: Column(
             children: [
-              Container(
-                height: 220,
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF005d63),
-                  borderRadius: BorderRadius.only(
-                    bottomRight: Radius.circular(60),
-                    bottomLeft: Radius.circular(60),
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    CircleAvatar(
-                      radius: 80,
-                      backgroundColor: Colors.white,
-                      backgroundImage: _selectedImage != null
-                          ? FileImage(_selectedImage!)
-                          : null,
-                      child: _selectedImage == null
-                          ? IconButton(
-                              onPressed: () {
-                                _showImagePicker(context);
-                              },
-                              icon: const Icon(Icons.add_a_photo_outlined),
-                            )
-                          : null,
-                    ),
-                    TextButton(
-                        onPressed: () {
-                          _showImagePicker(context);
-                        },
-                        child: const Text(
-                          'Add Image',
-                          style: TextStyle(color: Colors.white),
-                        ))
-                  ],
-                ),
+              AddMemberContainer(
+                selectedImage: _selectedImage,
+                onImageSelected: _setImage,
               ),
               const SizedBox(
                 height: 30,
@@ -85,76 +52,51 @@ class _AddMembersState extends State<AddMembers> {
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Form(
-                  autovalidateMode: AutovalidateMode.always,
                   key: _formKey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      TextFormField(
-                        controller: nameController,
-                        decoration: InputDecoration(
-                          label: const Text('Name'),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
+                      TextFormFieldPage(
+                        controllerType: nameController,
+                        labelText: 'Name',
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter member name';
+                            return 'Please enter name';
                           }
                           return null;
                         },
                       ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      TextFormField(
-                        controller: roleController,
-                        decoration: InputDecoration(
-                          label: const Text('Role'),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
+                      TextFormFieldPage(
+                        controllerType: roleController,
+                        labelText: 'Role',
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter Role';
+                            return 'Please enter role';
                           }
                           return null;
                         },
                       ),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        controller: phoneController,
-                        keyboardType: TextInputType.phone,
-                        maxLength: 10,
-                        decoration: InputDecoration(
-                          label: const Text('Phone number'),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
+                      TextFormFieldPage(
+                        controllerType: phoneController,
+                        type: TextInputType.phone,
+                        labelText: 'Phone',
+                        maxlength: 10,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter phone number';
+                            return 'Please enter phone';
+                          }
+                          if (int.tryParse(value) == null) {
+                            return 'Please enter Number only';
+                          }
+                          if (value.length < 10) {
+                            return 'Please enter 10 numbers';
                           }
                           return null;
                         },
                       ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      TextFormField(
-                        controller: strengthController,
-                        decoration: InputDecoration(
-                          label: const Text('Strength'),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
+                      TextFormFieldPage(
+                        controllerType: strengthController,
+                        labelText: 'Strength',
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter strength';
@@ -162,7 +104,6 @@ class _AddMembersState extends State<AddMembers> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 20),
                       const SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: () {
@@ -183,53 +124,10 @@ class _AddMembersState extends State<AddMembers> {
     );
   }
 
-  Future<void> _showImagePicker(BuildContext context) async {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) {
-        return Container(
-          color: const Color.fromARGB(255, 255, 255, 255),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                onPressed: () {
-                  _pickImageFromSource(1);
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.photo_library),
-              ),
-              IconButton(
-                onPressed: () {
-                  _pickImageFromSource(0);
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.camera_alt),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _pickImageFromSource(int value) async {
-    var pickedImage;
-    if (value == 0) {
-      pickedImage = await ImagePicker().pickImage(source: ImageSource.camera);
-    } else {
-      pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
-    }
-
-    if (pickedImage != null) {
-      setState(() {
-        _selectedImage = File(pickedImage.path);
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Center(child: Text('Image picking cancelled!')),
-      ));
-    }
+  void _setImage(File selectedImage) {
+    setState(() {
+      _selectedImage = selectedImage;
+    });
   }
 
   void _saveMemberDetails() async {
@@ -240,9 +138,10 @@ class _AddMembersState extends State<AddMembers> {
         phone: phoneController.text,
         strength: strengthController.text,
         photo: _selectedImage?.path,
-        id: memberId);
+        id: memberId,
+        pointsMap: {});
     await addMembers(memberDetails);
-   
+
     Navigator.pop(context);
   }
 }

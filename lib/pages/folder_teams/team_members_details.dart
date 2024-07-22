@@ -2,14 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:manager_app/db/model/functins/easy_access/colors.dart';
 import 'package:manager_app/db/model/member_details.dart';
-import 'package:manager_app/pages/image_fullscreen.dart';
+import 'package:manager_app/pages/additional/image_fullscreen.dart';
 
 class TeamMemberDetails extends StatelessWidget {
   final Members member;
   final int index;
 
-  const TeamMemberDetails({required this.member, required this.index});
+  const TeamMemberDetails({super.key, required this.member, required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +27,9 @@ class TeamMemberDetails extends StatelessWidget {
                       children: [
                         Container(
                           height: 200,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF005d63),
-                            borderRadius: BorderRadius.only(
+                          decoration: BoxDecoration(
+                            color: AppColors.getColor(AppColor.thirdcolor),
+                            borderRadius: const BorderRadius.only(
                               bottomLeft: Radius.circular(70),
                               bottomRight: Radius.circular(70),
                             ),

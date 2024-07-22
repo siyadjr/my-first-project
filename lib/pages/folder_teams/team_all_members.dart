@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:manager_app/db/model/functins/easy_access/colors.dart';
 import 'package:manager_app/db/model/functins/members_db.dart';
 import 'package:manager_app/db/model/member_details.dart';
 import 'package:manager_app/db/model/team_details_.dart';
@@ -10,7 +11,7 @@ import 'package:manager_app/pages/folder_teams/team_members_details.dart';
 class TeamAllMembers extends StatefulWidget {
   final TeamDetails team;
 
-  const TeamAllMembers({Key? key, required this.team}) : super(key: key);
+  const TeamAllMembers({super.key, required this.team});
 
   @override
   State<TeamAllMembers> createState() => _TeamAllMembersState();
@@ -26,7 +27,7 @@ class _TeamAllMembersState extends State<TeamAllMembers> {
   }
 
   Future<void> fetchMembers() async {
-    List<Members> fetchedMembers = await getTeamMember(widget.team);
+    List<Members> fetchedMembers = await getTeamMember(widget.team.id);
 
     setState(() {
       members = fetchedMembers;
@@ -38,7 +39,7 @@ class _TeamAllMembersState extends State<TeamAllMembers> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Color.fromARGB(255, 171, 20, 20),
+          backgroundColor: AppColors.getColor(AppColor.thirdcolor),
           automaticallyImplyLeading: false,
           leading: IconButton(
             onPressed: () {
@@ -62,7 +63,7 @@ class _TeamAllMembersState extends State<TeamAllMembers> {
         body: Padding(
           padding: const EdgeInsets.all(8.0),
           child: members.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text('No members'),
                 )
               : GridView.builder(
@@ -89,7 +90,7 @@ class _TeamAllMembersState extends State<TeamAllMembers> {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Card(
-                          color: Color.fromARGB(255, 171, 20, 20),
+                          color: AppColors.getColor(AppColor.thirdcolor),
                           elevation: 3,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),

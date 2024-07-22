@@ -1,23 +1,28 @@
-import 'dart:io';
+// ignore_for_file: library_private_types_in_public_api
 
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:manager_app/db/model/functins/members_db.dart';
+import 'package:manager_app/db/model/functins/easy_access/colors.dart';
 import 'package:manager_app/db/model/member_details.dart';
 import 'package:manager_app/db/model/team_details_.dart';
-import 'package:manager_app/pages/folder_teams/team_members_details.dart';
+import 'package:manager_app/db/model/functins/members_db.dart';
 
 class PointTableContainer extends StatefulWidget {
   final TeamDetails team;
   final VoidCallback onRefresh;
-  const PointTableContainer(
-      {super.key, required this.team, required this.onRefresh});
+
+  const PointTableContainer({
+    super.key,
+    required this.team,
+    required this.onRefresh,
+  });
 
   @override
-  State<PointTableContainer> createState() => _PointTableContainerState();
+  _PointTableContainerState createState() => _PointTableContainerState();
 }
 
 class _PointTableContainerState extends State<PointTableContainer> {
-  List<Members> members = [];
+  List<Members>? members;
 
   @override
   void initState() {
@@ -25,68 +30,165 @@ class _PointTableContainerState extends State<PointTableContainer> {
     fetchMembers();
   }
 
-  Future<void> fetchMembers() async {
-    List<Members> fetchedMembers = await getTeamMember(widget.team);
-    setState(() {
-      members = fetchedMembers;
-    });
-  }
-
-  @override
-  void didUpdateWidget(covariant PointTableContainer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.team != widget.team) {
-      fetchMembers();
+  Widget _buildAvatar(Members member) {
+    if (member.photo != null && member.photo!.isNotEmpty) {
+      File file = File(member.photo!);
+      if (file.existsSync()) {
+        return CircleAvatar(
+          radius: 30,
+          backgroundImage: FileImage(file),
+        );
+      }
     }
+
+    return const CircleAvatar(
+      radius: 30,
+      backgroundImage: AssetImage('lib/assets/default_avatar_member.jpg'),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    int length = members.length > 3 ? 3 : members.length;
-
-    return Container(
-      height: 200,
-      padding: const EdgeInsets.all(8.0),
-      child: members.isEmpty
-          ? const Center(
-              child: Text('No members'),
-            )
-          : ListView.separated(
-              physics: const NeverScrollableScrollPhysics(),
-              separatorBuilder: (context, index) => const Divider(),
-              itemCount: length,
-              itemBuilder: (context, index) {
-                final member = members[index];
-                return ListTile(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (ctx) =>
-                            TeamMemberDetails(member: member, index: index),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: AppColors.getColor(AppColor.maincolor),
+        appBar: AppBar(
+          title: const Text('Point Table'),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: resetListByPoints,
+            ),
+          ],
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: members == null || members!.isEmpty
+              ? Center(
+                  child: Text(
+                    'No Members',
+                    style: TextStyle(
+                        color: AppColors.getColor(AppColor.secondaryColor)),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: members!.length,
+                  itemBuilder: (context, index) {
+                    final member = members![index];
+                    return ListTile(
+                      leading: Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                            color: AppColors.getColor(AppColor.secondaryColor)),
+                      ), // Rank
+                      title: Card(
+                        child: ListTile(
+                          leading: _buildAvatar(member),
+                          title: Text(member.name),
+                          subtitle: Row(
+                            children: [
+                              const SizedBox(width: 5),
+                              Text(
+                                '${member.pointsMap[widget.team.id] ?? 0} Points',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.add),
+                                onPressed: () => _incrementPoints(member),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.remove),
+                                onPressed: () => _decrementPoints(member),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   },
-                  title: Text(
-                    member.name.toUpperCase(),
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  trailing: const Text('1'),
-                  leading: member.photo != null && member.photo!.isNotEmpty
-                      ? CircleAvatar(
-                          radius: 20,
-                          backgroundColor:
-                              const Color.fromARGB(255, 67, 123, 132),
-                          backgroundImage: FileImage(File(member.photo!)),
-                        )
-                      : const CircleAvatar(
-                          radius: 20,
-                          backgroundImage: AssetImage(
-                              'lib/assets/default_avatar_member.jpg'),
-                        ),
-                );
-              },
-            ),
+                ),
+        ),
+      ),
     );
+  }
+
+  Future<void> fetchMembers() async {
+    List<Members> fetchedMembers = await getTeamMember(widget.team.id);
+    setState(() {
+      members = fetchedMembers;
+      _sortMembersByPoints();
+    });
+  }
+
+  void resetListByPoints() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Reset'),
+          content: const Text(
+              'Are you sure you want to reset all points? This action cannot be undone.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                _performReset(); // Perform the reset operation
+              },
+              child: const Text('Reset'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _performReset() {
+    setState(() {
+      if (members != null) {
+        for (var member in members!) {
+          member.pointsMap[widget.team.id] = 0;
+          updateMember(member); // Update member in DB
+        }
+        _sortMembersByPoints();
+      }
+    });
+  }
+
+  void _incrementPoints(Members member) {
+    setState(() {
+      member.pointsMap[widget.team.id] =
+          (member.pointsMap[widget.team.id] ?? 0) + 1;
+      updateMember(member); // Update member in DB
+      _sortMembersByPoints();
+    });
+  }
+
+  void _decrementPoints(Members member) {
+    setState(() {
+      if (member.pointsMap[widget.team.id] != null &&
+          member.pointsMap[widget.team.id]! > 0) {
+        member.pointsMap[widget.team.id] =
+            member.pointsMap[widget.team.id]! - 1;
+        updateMember(member);
+        _sortMembersByPoints();
+      }
+    });
+  }
+
+  void _sortMembersByPoints() {
+    members!.sort((a, b) => (b.pointsMap[widget.team.id] ?? 0)
+        .compareTo(a.pointsMap[widget.team.id] ?? 0));
   }
 }

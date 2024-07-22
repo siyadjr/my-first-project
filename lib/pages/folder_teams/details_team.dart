@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:manager_app/db/model/functins/easy_access/colors.dart';
 
 import 'package:manager_app/db/model/team_details_.dart';
 import 'package:manager_app/db/model/functins/easy_access/button_page.dart';
-import 'package:manager_app/pages/folder_members/all_members.dart';
 import 'package:manager_app/pages/folder_teams/edit_team.dart';
 import 'package:manager_app/pages/folder_teams/point%20table/point_table_container.dart';
 import 'package:manager_app/pages/folder_teams/task%20for%20teams/task_container.dart';
@@ -29,7 +29,7 @@ class _DetailsTeamState extends State<DetailsTeam> {
     team = widget.team;
   }
 
-  void refreshTeamMembers() {
+  void refresh() {
     setState(() {});
   }
 
@@ -37,14 +37,17 @@ class _DetailsTeamState extends State<DetailsTeam> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+        backgroundColor: AppColors.getColor(AppColor.secondaryColor),
         appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 250, 254, 255),
+          iconTheme: IconThemeData(
+            color: AppColors.getColor(AppColor.secondaryColor),
+          ),
+          backgroundColor: AppColors.getColor(AppColor.maincolor),
           centerTitle: true,
           title: Text(
             '${team.teamName!.toUpperCase()} Details',
-            style: const TextStyle(
-                color: Color.fromARGB(255, 0, 0, 0),
+            style: TextStyle(
+                color: AppColors.getColor(AppColor.secondaryColor),
                 fontWeight: FontWeight.bold,
                 fontSize: 16),
           ),
@@ -59,20 +62,20 @@ class _DetailsTeamState extends State<DetailsTeam> {
                 if (updatedTeam != null) {
                   setState(() {
                     team = updatedTeam;
-                    refreshTeamMembers(); // Call the refresh function
+                    refresh();
                   });
                 }
               },
-              icon: const Icon(
+              icon: Icon(
                 Icons.edit,
-                color: Color.fromARGB(255, 0, 0, 0),
+                color: AppColors.getColor(AppColor.secondaryColor),
               ),
             ),
           ],
         ),
         body: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(5.0),
             child: Center(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -86,17 +89,38 @@ class _DetailsTeamState extends State<DetailsTeam> {
                       buttonName: "Members"),
                   TeamMembers(
                     team: team,
-                    onRefresh: refreshTeamMembers,
+                    onRefresh: refresh,
                   ),
-                  const ButtonPage(
-                      targetPage: AllMembers(), buttonName: 'Tasks'),
-                  const TeamTaskContainer(),
-                  const ButtonPage(
-                      targetPage: AllMembers(), buttonName: 'Point Table'),
-                  PointTableContainer(
-                    team: team,
-                    onRefresh: refreshTeamMembers,
-                  )
+                  TeamTaskContainer(
+                    team: widget.team,
+                    onRefresh: refresh,
+                  ),
+                  const Divider(),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    elevation: 4,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (ctx) => PointTableContainer(
+                                      team: team, onRefresh: refresh)));
+                        },
+                        child: Image.asset(
+                          'lib/assets/point_system_image.jpg',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -134,7 +136,7 @@ class _EditMembersState extends State<EditMembers> {
               TextButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    saveUpdated(widget.member, widget.index);
+                    saveUpdated(widget.member.id);
                   }
                 },
                 child: const Text('Save'),
@@ -146,21 +148,24 @@ class _EditMembersState extends State<EditMembers> {
     );
   }
 
-  Future<void> saveUpdated(Members member, int index) async {
+  Future<void> saveUpdated(int memberId) async {
     final updatedName = _nameController.text;
-    final updatedrole = _roleController.text;
+    final updatedRole = _roleController.text;
     final updatedPhone = _phoneController.text;
     final updatedStrength = _strengthController.text;
     final updatedImage =
-        _selectedImage == null ? member.photo : _selectedImage?.path;
+        _selectedImage == null ? widget.member.photo : _selectedImage?.path;
+
     final newMember = Members(
+        id: memberId,
         name: updatedName,
-        role: updatedrole,
+        role: updatedRole,
         phone: updatedPhone,
         strength: updatedStrength,
         photo: updatedImage,
-        id: widget.member.id);
-    updateMember(newMember, index);
+        pointsMap: widget.member.pointsMap ?? {});
+
+    await updateMember(newMember);
     Navigator.pop(context, newMember);
   }
 

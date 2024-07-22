@@ -4,13 +4,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:manager_app/db/model/functins/easy_access/text_formfield.dart';
 import 'package:manager_app/db/model/functins/team_db.dart';
 import 'package:manager_app/db/model/team_details_.dart';
-import 'package:manager_app/pages/select_members.dart';
+import 'package:manager_app/pages/additional/select_members.dart';
 
 class EditTeam extends StatefulWidget {
   final TeamDetails team;
   final int index;
 
-  const EditTeam({super.key, required this.team, required this.index});
+  const EditTeam({Key? key, required this.team, required this.index})
+      : super(key: key);
 
   @override
   State<EditTeam> createState() => _EditTeamState();
@@ -30,7 +31,7 @@ class _EditTeamState extends State<EditTeam> {
     super.initState();
     _nameController = TextEditingController(text: widget.team.teamName);
     _aboutController = TextEditingController(text: widget.team.teamAbout);
-    selectedMemberIds = widget.team.memberIds!;
+    selectedMemberIds = List<int>.from(widget.team.memberIds ?? []);
   }
 
   @override
@@ -112,11 +113,12 @@ class _EditTeamState extends State<EditTeam> {
                           trailing:
                               const Icon(Icons.keyboard_arrow_right_rounded),
                           onTap: () async {
-                            final List<int>? result = await Navigator.push(
+                            final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (ctx) => SelectMembers(
                                   team: widget.team,
+                                  initialSelectedMembers: selectedMemberIds,
                                 ),
                               ),
                             );
@@ -124,7 +126,6 @@ class _EditTeamState extends State<EditTeam> {
                               setState(() {
                                 selectedMemberIds = result;
                               });
-                              
                             }
                           },
                         ),
@@ -160,10 +161,12 @@ class _EditTeamState extends State<EditTeam> {
       teamAbout: updatedAbout,
       teamPhoto: updatedImage,
       memberIds: selectedMemberIds,
+      taskIds: team.taskIds ?? [],
+      id: widget.team.id,
     );
 
     await updatedTeam(newTeam, index);
-    Navigator.pop(context, newTeam,);
+    Navigator.pop(context, newTeam);
   }
 
   Future<void> _showImagePicker(BuildContext context) async {
