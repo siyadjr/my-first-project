@@ -103,9 +103,10 @@ class _DeleteAccountState extends State<DeleteAccount> {
   }
 
   void _navigateToLogin() {
-    Navigator.pushReplacement(
+    Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const SignUpScreen()),
+      MaterialPageRoute(builder: (ctx) => SignUpScreen()),
+      (route) => false,
     );
   }
 }
